@@ -29,6 +29,7 @@ typedef CharacterFile = {
 
 	var position:Array<Float>;
 	var camera_position:Array<Float>;
+	var playerCamera_position:Array<Float>;
 
 	var flip_x:Bool;
 	var no_antialiasing:Bool;
@@ -42,6 +43,7 @@ typedef AnimArray = {
 	var loop:Bool;
 	var indices:Array<Int>;
 	var offsets:Array<Int>;
+	var playerOffsets:Array<Int>;
 }
 
 class Character extends FlxSprite
@@ -68,6 +70,7 @@ class Character extends FlxSprite
 
 	public var positionArray:Array<Float> = [0, 0];
 	public var cameraPosition:Array<Float> = [0, 0];
+	public var playerCameraPosition:Array<Float> = [0, 0];
 
 	public var hasMissAnimations:Bool = false;
 
@@ -175,7 +178,18 @@ class Character extends FlxSprite
 				}
 
 				positionArray = json.position;
-				cameraPosition = json.camera_position;
+				if(isPlayer)
+				{
+					if(json.playerCamera_position != null && json.playerCamera_position.length > 1)
+						playerCameraPosition = json.playerCamera_position;
+					else
+						playerCameraPosition = json.camera_position;
+				}
+				else
+				{
+					cameraPosition = json.camera_position;
+				}
+				
 
 				healthIcon = json.healthicon;
 				singDuration = json.sing_duration;
@@ -205,9 +219,22 @@ class Character extends FlxSprite
 							animation.addByPrefix(animAnim, animName, animFps, animLoop);
 						}
 
-						if(anim.offsets != null && anim.offsets.length > 1) {
-							addOffset(anim.anim, anim.offsets[0], anim.offsets[1]);
+						if(isPlayer)
+						{
+							if(anim.playerOffsets != null && anim.playerOffsets.length > 1) {
+								addOffset(anim.anim, anim.playerOffsets[0], anim.playerOffsets[1]);
+							}
+							else if(anim.offsets != null && anim.offsets.length > 1) {
+								addOffset(anim.anim, anim.offsets[0], anim.offsets[1]);
+							}
 						}
+						else
+						{
+							if(anim.offsets != null && anim.offsets.length > 1) {
+								addOffset(anim.anim, anim.offsets[0], anim.offsets[1]);
+							}
+						}
+
 					}
 				} else {
 					quickAnimAdd('idle', 'BF idle dance');
